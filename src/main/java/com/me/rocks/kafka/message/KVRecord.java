@@ -1,19 +1,20 @@
 package com.me.rocks.kafka.message;
 
-import org.apache.avro.generic.GenericData;
+import com.me.rocks.kafka.avro.AvroModel;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class KVRecord implements Serializable {
     private String key;
-    private GenericData.Record record;
+    private AvroModel model;
 
     public KVRecord() {
     }
 
-    public KVRecord(String key, GenericData.Record record) {
+    public KVRecord(String key, AvroModel model) {
         this.key = key;
-        this.record = record;
+        this.model = model;
     }
 
     public String getKey() {
@@ -24,11 +25,33 @@ public class KVRecord implements Serializable {
         this.key = key;
     }
 
-    public GenericData.Record getRecord() {
-        return record;
+    public AvroModel getModel() {
+        return model;
     }
 
-    public void setRecord(GenericData.Record record) {
-        this.record = record;
+    public void setModel(AvroModel model) {
+        this.model = model;
+    }
+
+    @Override
+    public String toString() {
+        return "KVRecord{" +
+                "key='" + key + '\'' +
+                ", model=" + model +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        KVRecord kvRecord = (KVRecord) o;
+        return Objects.equals(key, kvRecord.key) &&
+                Objects.equals(model, kvRecord.model);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, model);
     }
 }

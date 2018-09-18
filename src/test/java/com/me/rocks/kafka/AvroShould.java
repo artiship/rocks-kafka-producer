@@ -1,7 +1,7 @@
 package com.me.rocks.kafka;
 
-import com.me.rocks.kafka.model.DifferentUser;
-import com.me.rocks.kafka.model.UserType;
+import com.me.rocks.kafka.AbstractShould.DifferentUser;
+import com.me.rocks.kafka.AbstractShould.UserType;
 import com.me.rocks.kafka.avro.GenericRecordMapper;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
