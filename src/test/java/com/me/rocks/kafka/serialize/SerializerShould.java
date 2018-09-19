@@ -1,6 +1,7 @@
 package com.me.rocks.kafka.serialize;
 
 import com.me.rocks.kafka.AbstractShould;
+import com.me.rocks.kafka.benchmark.model.DifferentUser;
 import com.me.rocks.kafka.message.KVRecord;
 import org.junit.Test;
 import org.slf4j.Logger;

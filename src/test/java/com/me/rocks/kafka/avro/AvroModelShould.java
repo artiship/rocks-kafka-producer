@@ -1,11 +1,11 @@
-package com.me.rocks.kafka.message;
+package com.me.rocks.kafka.avro;
 
-import com.me.rocks.kafka.AbstractShould;
+import com.me.rocks.kafka.benchmark.model.DifferentUser;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.me.rocks.kafka.AbstractShould.UserType.JUNIOR;
+import static com.me.rocks.kafka.benchmark.model.UserType.JUNIOR;
 import static org.junit.Assert.assertNotNull;
 
 public class AvroModelShould {
@@ -14,7 +14,7 @@ public class AvroModelShould {
 
     @Test public void
     should_model_extends_parent_avro_message_can_get_schema() {
-        AbstractShould.DifferentUser user = new AbstractShould.DifferentUser();
+        DifferentUser user = new DifferentUser();
         user.setFavoriteColor("red");
         user.setFavoriteNumber(10);
         user.setName("samuel");

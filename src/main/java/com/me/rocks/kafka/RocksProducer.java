@@ -5,7 +5,8 @@ import com.me.rocks.kafka.avro.GenericRecordMapper;
 import com.me.rocks.kafka.avro.AvroModel;
 import com.me.rocks.kafka.message.KVRecord;
 import com.me.rocks.kafka.queue.RocksQueueFactory;
-import com.me.rocks.kafka.serialize.JdkSerializer;
+import com.me.rocks.kafka.serialize.KryoSerializer;
+import com.me.rocks.kafka.serialize.Serializer;
 import com.me.rocks.queue.QueueItem;
 import com.me.rocks.queue.RocksQueue;
 import org.apache.avro.generic.GenericData.Record;
@@ -23,14 +24,14 @@ public class RocksProducer {
     private static final Logger log = LoggerFactory.getLogger(RocksProducer.class);
 
     private final String topic;
-    private final JdkSerializer serialzer;
+    private final Serializer serializer;
     private final RocksQueue queue;
     private final ExecutorService executorService;
     private final Producer<String, Record> producer;
 
     public RocksProducer(final String topic) {
         this.topic = topic;
-        this.serialzer = new JdkSerializer();
+        this.serializer = new KryoSerializer();
         this.queue = RocksQueueFactory.INSTANCE.createQueue(topic);
         this.producer = AvroProducerFactory.INSTANCE.getInstance();
 
@@ -42,7 +43,7 @@ public class RocksProducer {
 
     public void send(String key, AvroModel value) {
         KVRecord kvRecord = new KVRecord(key, value);
-        queue.enqueue(serialzer.serialize(kvRecord));
+        queue.enqueue(serializer.serialize(kvRecord));
     }
 
     class RocksQueueConsumer implements Runnable {
@@ -50,7 +51,7 @@ public class RocksProducer {
         public void run() {
             while(true) {
                 QueueItem consume = queue.consume();
-                AvroModel model = serialzer.deserialize(consume.getValue());
+                AvroModel model = serializer.deserialize(consume.getValue());
 
                 Record record = GenericRecordMapper.mapObjectToRecord(model);
 

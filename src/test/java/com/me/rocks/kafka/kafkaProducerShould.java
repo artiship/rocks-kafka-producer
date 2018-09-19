@@ -1,7 +1,8 @@
 package com.me.rocks.kafka;
 
-import com.me.rocks.kafka.AbstractShould.UserType;
 import com.me.rocks.kafka.avro.GenericRecordMapper;
+import com.me.rocks.kafka.benchmark.model.DifferentUser;
+import com.me.rocks.kafka.benchmark.model.UserType;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -36,7 +37,7 @@ public class kafkaProducerShould {
 
         registerShutdownHook(producer);
 
-        AbstractShould.DifferentUser user = new AbstractShould.DifferentUser();
+        DifferentUser user = new DifferentUser();
         user.setFavoriteColor("red");
         user.setFavoriteNumber(10);
         user.setName("samuel");

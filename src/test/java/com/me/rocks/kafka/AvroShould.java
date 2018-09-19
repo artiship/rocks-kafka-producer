@@ -1,11 +1,11 @@
 package com.me.rocks.kafka;
 
-import com.me.rocks.kafka.AbstractShould.DifferentUser;
-import com.me.rocks.kafka.AbstractShould.UserType;
 import com.me.rocks.kafka.avro.GenericRecordMapper;
+import com.me.rocks.kafka.benchmark.model.DifferentUser;
+import com.me.rocks.kafka.benchmark.model.UserType;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
-import org.apache.avro.reflect.*;
+import org.apache.avro.reflect.ReflectData;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

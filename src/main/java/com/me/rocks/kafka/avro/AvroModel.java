@@ -6,6 +6,7 @@ import org.apache.avro.reflect.ReflectData;
 import java.io.Serializable;
 
 abstract public class AvroModel implements Serializable {
+
     public String getSchema() {
         Schema schema = ReflectData.get().getSchema(this.getClass());
         if(schema == null) {
