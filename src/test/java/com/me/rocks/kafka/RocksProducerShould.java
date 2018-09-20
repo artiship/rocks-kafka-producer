@@ -1,6 +1,6 @@
 package com.me.rocks.kafka;
 
-import com.me.rocks.kafka.delivery.DeliveryStrategies;
+import com.me.rocks.kafka.delivery.DeliveryStrategyEnum;
 import com.me.rocks.kafka.exception.RocksProducerException;
 import com.me.rocks.kafka.queue.serialize.JdkSerializer;
 import org.junit.Test;
@@ -8,12 +8,12 @@ import org.junit.Test;
 public class RocksProducerShould extends AbstractShould{
     @Test public void
     should_send() {
-        String topicName = "topic_name";
+        String topic = "topic_name";
 
         RocksProducer producer = RocksProducer.builder()
-                .topic(topicName)
+                .topic(topic)
                 .serializer(new JdkSerializer())
-                .kafkaDeliveryStrategy(DeliveryStrategies.FAST)
+                .kafkaDeliveryStrategy(DeliveryStrategyEnum.FAST)
                 .build();
         try {
             producer.send(user.getName(), user);

@@ -11,7 +11,7 @@ public enum RocksQueueFactory {
     private final RocksStore rocksStore;
 
     RocksQueueFactory() {
-        StoreOptions options = new StoreOptions.Builder().setDatabase(ROCKSDB_NAME).build();
+        StoreOptions options = new StoreOptions.Builder().database(ROCKSDB_NAME).build();
         options.setDefaults();
         rocksStore = new RocksStore(options);
     }

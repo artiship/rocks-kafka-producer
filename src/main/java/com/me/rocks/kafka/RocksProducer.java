@@ -2,7 +2,8 @@ package com.me.rocks.kafka;
 
 import com.me.rocks.kafka.avro.AvroModel;
 import com.me.rocks.kafka.avro.GenericRecordMapper;
-import com.me.rocks.kafka.delivery.DeliveryStrategies;
+import com.me.rocks.kafka.delivery.DeliveryStrategy;
+import com.me.rocks.kafka.delivery.DeliveryStrategyEnum;
 import com.me.rocks.kafka.exception.RocksProducerException;
 import com.me.rocks.kafka.queue.RocksQueueFactory;
 import com.me.rocks.kafka.queue.message.KVRecord;
@@ -29,7 +30,7 @@ public class RocksProducer {
     private final Listener listener;
     private final ExecutorService executorService;
 
-    public RocksProducer(final String topic, final Serializer serializer, final Listener listener, final DeliveryStrategies strategy) {
+    public RocksProducer(final String topic, final Serializer serializer, final Listener listener, final DeliveryStrategy strategy) {
         this.topic = topic;
         this.serializer = serializer;
         this.listener = listener;
@@ -65,7 +66,7 @@ public class RocksProducer {
         private String topic;
         private Serializer serializer;
         private Listener listener;
-        private DeliveryStrategies strategy;
+        private DeliveryStrategy strategy;
 
         public Builder() {
 
@@ -86,7 +87,7 @@ public class RocksProducer {
             return this;
         }
 
-        public Builder kafkaDeliveryStrategy(DeliveryStrategies strategy) {
+        public Builder kafkaDeliveryStrategy(DeliveryStrategy strategy) {
             this.strategy = strategy;
             return this;
         }
@@ -122,7 +123,7 @@ public class RocksProducer {
             }
 
             if(strategy == null) {
-                strategy = DeliveryStrategies.RELIABLE;
+                strategy = DeliveryStrategyEnum.RELIABLE;
             }
 
             return new RocksProducer(topic, serializer, listener, strategy);
@@ -133,7 +134,7 @@ public class RocksProducer {
         return new Builder();
     }
 
-    private void registerShutdownHook(DeliveryStrategies strategy) {
+    private void registerShutdownHook(DeliveryStrategy strategy) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.debug("Closing application...");
 

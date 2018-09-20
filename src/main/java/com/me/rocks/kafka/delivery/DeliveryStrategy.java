@@ -9,4 +9,6 @@ public interface DeliveryStrategy {
     void delivery(final ProducerRecord<String, GenericData.Record> producerRecord,
                          final RocksQueue queue,
                          final RocksProducer.Listener listener);
+
+    void clear();
 }

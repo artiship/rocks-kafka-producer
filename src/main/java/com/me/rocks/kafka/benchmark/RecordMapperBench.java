@@ -12,12 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(MICROSECONDS)
-@Warmup(iterations = 5, time = 1, timeUnit = SECONDS)
-@Measurement(iterations = 20, time = 1, timeUnit = SECONDS)
+@Warmup(iterations = 5, time = 1, timeUnit = MILLISECONDS)
+@Measurement(iterations = 20, time = 1, timeUnit = MILLISECONDS)
 @Fork(1)
 @State(Scope.Benchmark)
 public class RecordMapperBench {

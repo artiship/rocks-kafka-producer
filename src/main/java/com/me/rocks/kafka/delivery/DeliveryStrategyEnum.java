@@ -15,7 +15,7 @@ import java.util.Properties;
  * In this mode, RocksProducer will not remove message from rocks queue after consume, until the kafka
  * send callback return and infer that the message has been written into kafka broker successfully.
  */
-public enum DeliveryStrategies implements DeliveryStrategy {
+public enum DeliveryStrategyEnum implements DeliveryStrategy {
     FAST{
         private KafkaProducer<String, GenericData.Record> producer = new KafkaProducer<String, GenericData.Record>(getProducerProperties());
 
@@ -83,7 +83,6 @@ public enum DeliveryStrategies implements DeliveryStrategy {
         }
     };
 
-    private static final Logger log = LoggerFactory.getLogger(DeliveryStrategies.class);
+    private static final Logger log = LoggerFactory.getLogger(DeliveryStrategyEnum.class);
     public abstract Properties getProducerProperties();
-    public abstract void clear();
 }
