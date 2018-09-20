@@ -1,10 +1,10 @@
 package com.me.rocks.kafka.benchmark;
 
 import com.me.rocks.kafka.benchmark.model.DifferentUser;
-import com.me.rocks.kafka.message.KVRecord;
-import com.me.rocks.kafka.serialize.JdkSerializer;
-import com.me.rocks.kafka.serialize.KryoSerializer;
-import com.me.rocks.kafka.serialize.Serializer;
+import com.me.rocks.kafka.queue.message.KVRecord;
+import com.me.rocks.kafka.queue.serialize.JdkSerializer;
+import com.me.rocks.kafka.queue.serialize.KryoSerializer;
+import com.me.rocks.kafka.queue.serialize.Serializer;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;

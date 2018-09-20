@@ -1,4 +1,4 @@
-package com.me.rocks.kafka.message;
+package com.me.rocks.kafka.queue.message;
 
 import com.me.rocks.kafka.avro.AvroModel;
 

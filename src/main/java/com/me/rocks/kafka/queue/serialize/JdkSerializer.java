@@ -1,4 +1,4 @@
-package com.me.rocks.kafka.serialize;
+package com.me.rocks.kafka.queue.serialize;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

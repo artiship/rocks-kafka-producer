@@ -1,7 +1,7 @@
 package com.me.rocks.kafka;
 
 import com.me.rocks.kafka.benchmark.model.DifferentUser;
-import com.me.rocks.kafka.message.KVRecord;
+import com.me.rocks.kafka.queue.message.KVRecord;
 import org.junit.Before;
 
 abstract public class AbstractShould {

@@ -1,4 +1,4 @@
-package com.me.rocks.kafka.serialize;
+package com.me.rocks.kafka.queue.serialize;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
@@ -18,10 +18,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 
 public class KryoSerializer implements Serializer {
     private static final Logger log = LoggerFactory.getLogger(KryoSerializer.class);

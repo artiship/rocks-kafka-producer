@@ -1,9 +1,9 @@
 package com.me.rocks.kafka.queue;
 
 import com.me.rocks.kafka.AbstractShould;
-import com.me.rocks.kafka.message.KVRecord;
-import com.me.rocks.kafka.serialize.JdkSerializer;
-import com.me.rocks.kafka.serialize.Serializer;
+import com.me.rocks.kafka.queue.message.KVRecord;
+import com.me.rocks.kafka.queue.serialize.JdkSerializer;
+import com.me.rocks.kafka.queue.serialize.Serializer;
 import com.me.rocks.queue.QueueItem;
 import com.me.rocks.queue.RocksQueue;
 import org.junit.Test;

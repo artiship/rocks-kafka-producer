@@ -1,4 +1,4 @@
-package com.me.rocks.kafka.serialize;
+package com.me.rocks.kafka.queue.serialize;
 
 public interface Serializer {
     public byte[] serialize(Object obj);

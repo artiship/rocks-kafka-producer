@@ -2,7 +2,10 @@ package com.me.rocks.kafka.serialize;
 
 import com.me.rocks.kafka.AbstractShould;
 import com.me.rocks.kafka.benchmark.model.DifferentUser;
-import com.me.rocks.kafka.message.KVRecord;
+import com.me.rocks.kafka.queue.message.KVRecord;
+import com.me.rocks.kafka.queue.serialize.JdkSerializer;
+import com.me.rocks.kafka.queue.serialize.KryoSerializer;
+import com.me.rocks.kafka.queue.serialize.Serializer;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
