@@ -1,6 +1,6 @@
 package com.me.rocks.kafka;
 
-import com.me.rocks.kafka.delivery.DeliveryStrategyEnum;
+import com.me.rocks.kafka.delivery.strategies.DeliveryStrategyEnum;
 import com.me.rocks.kafka.exception.RocksProducerException;
 import com.me.rocks.kafka.queue.serialize.JdkSerializer;
 import org.junit.Test;

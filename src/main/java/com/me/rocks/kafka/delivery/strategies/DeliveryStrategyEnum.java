@@ -1,6 +1,7 @@
-package com.me.rocks.kafka.delivery;
+package com.me.rocks.kafka.delivery.strategies;
 
 import com.me.rocks.kafka.RocksProducer;
+import com.me.rocks.kafka.delivery.config.KafkaProducerConfig;
 import com.me.rocks.queue.RocksQueue;
 import com.me.rocks.queue.exception.RocksQueueException;
 import org.apache.avro.generic.GenericData;
