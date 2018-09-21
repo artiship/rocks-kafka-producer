@@ -1,23 +1,29 @@
 package com.me.rocks.kafka.delivery.strategies;
 
-import com.me.rocks.kafka.config.KafkaProducerConfig;
 import com.me.rocks.queue.RocksQueue;
+import org.apache.avro.generic.GenericData;
+import org.apache.kafka.clients.producer.Producer;
 
-import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DeliveryStrategyReliable extends DeliveryStrategyTemplate {
+
+    public DeliveryStrategyReliable() {
+    }
+
+    public DeliveryStrategyReliable(Producer<String, GenericData.Record> producer) {
+        super(producer);
+    }
+
     @Override
-    public void onCallBack(final RocksQueue queue) {
+    public void afterCallback(final RocksQueue queue, AtomicBoolean lock) {
         this.removeHead(queue);
+        lock.set(false);
     }
 
     @Override
-    public void afterSend(final RocksQueue queue) {
+    public void afterSend(final RocksQueue queue, AtomicBoolean lock) {
 
     }
 
-    @Override
-    public Properties getProducerProperties() {
-        return KafkaProducerConfig.loadProperties();
-    }
 }

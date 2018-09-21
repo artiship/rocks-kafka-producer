@@ -4,12 +4,11 @@ import com.me.rocks.kafka.RocksProducer.Listener;
 import com.me.rocks.kafka.delivery.strategies.DeliveryStrategy;
 import com.me.rocks.kafka.delivery.strategies.DeliveryStrategyFast;
 import com.me.rocks.kafka.delivery.strategies.DeliveryStrategyReliable;
+import com.me.rocks.kafka.queue.message.KVRecord;
 import com.me.rocks.queue.RocksQueue;
-import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.util.List;
-
-import static org.apache.avro.generic.GenericData.Record;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public enum DeliveryStrategyEnum implements DeliveryStrategy {
     /**
@@ -18,9 +17,15 @@ public enum DeliveryStrategyEnum implements DeliveryStrategy {
      */
     FAST {
         private final DeliveryStrategy strategy = new DeliveryStrategyFast();
+
+
         @Override
-        public void delivery(ProducerRecord<String, Record> producerRecord, RocksQueue queue, List<Listener> listeners) {
-            this.strategy.delivery(producerRecord, queue, listeners);
+        public void delivery(String topic,
+                             KVRecord kvRecord,
+                             RocksQueue queue,
+                             List<Listener> listeners,
+                             AtomicBoolean lock) {
+            this.strategy.delivery(topic, kvRecord, queue, listeners, lock);
         }
 
         @Override
@@ -35,9 +40,14 @@ public enum DeliveryStrategyEnum implements DeliveryStrategy {
     RELIABLE {
         private final DeliveryStrategy strategy = new DeliveryStrategyReliable();
 
+
         @Override
-        public void delivery(ProducerRecord<String, Record> producerRecord, RocksQueue queue, List<Listener> listeners) {
-            this.strategy.delivery(producerRecord, queue, listeners);
+        public void delivery(String topic,
+                             KVRecord kvRecord,
+                             RocksQueue queue,
+                             List<Listener> listeners,
+                             AtomicBoolean lock) {
+            this.strategy.delivery(topic, kvRecord, queue, listeners, lock);
         }
 
         @Override

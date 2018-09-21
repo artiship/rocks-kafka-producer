@@ -20,12 +20,9 @@ public class RocksQueueFactoryShould extends AbstractShould {
     should_enqueue_dequeue() throws RocksQueueException {
         Serializer serializer = new JdkSerializer();
         String queuName = "kafk_topic_name";
-        RocksQueue queue = RocksQueueFactory.INSTANCE.createQueue(queuName);
+        RocksQueue queue = store.createQueue(queuName);
 
-        long start = System.currentTimeMillis();
         queue.enqueue(serializer.serialize(kv));
-        long end = System.currentTimeMillis();
-        log.info("enqueue cost {}",  end - start);
         QueueItem dequeue = queue.dequeue();
         byte[] value = dequeue.getValue();
 

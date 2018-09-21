@@ -1,21 +1,21 @@
 package com.me.rocks.kafka;
 
 import com.me.rocks.kafka.avro.AvroModel;
-import com.me.rocks.kafka.avro.GenericRecordMapper;
 import com.me.rocks.kafka.config.RocksThreadFactory;
-import com.me.rocks.kafka.delivery.health.KafkaHealthChecker;
-import com.me.rocks.kafka.delivery.strategies.DeliveryStrategy;
 import com.me.rocks.kafka.delivery.DeliveryStrategyEnum;
+import com.me.rocks.kafka.delivery.health.KafkaHealthChecker;
+import com.me.rocks.kafka.delivery.health.KafkaHealthCheckerFactory;
+import com.me.rocks.kafka.delivery.strategies.DeliveryStrategy;
 import com.me.rocks.kafka.exception.RocksProducerException;
-import com.me.rocks.kafka.queue.RocksQueueFactory;
+import com.me.rocks.kafka.jmx.RocksProducerMetric;
+import com.me.rocks.kafka.queue.RocksStoreFactory;
 import com.me.rocks.kafka.queue.message.KVRecord;
 import com.me.rocks.kafka.queue.serialize.KryoSerializer;
 import com.me.rocks.kafka.queue.serialize.Serializer;
 import com.me.rocks.queue.QueueItem;
 import com.me.rocks.queue.RocksQueue;
+import com.me.rocks.queue.RocksStore;
 import com.me.rocks.queue.exception.RocksQueueException;
-import org.apache.avro.generic.GenericData.Record;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RocksProducer {
     private static final Logger log = LoggerFactory.getLogger(RocksProducer.class);
@@ -32,46 +33,76 @@ public class RocksProducer {
     private final String topic;
     private final Serializer serializer;
     private final RocksQueue queue;
-    private final List<Listener> listeners = new LinkedList<Listener>();
+    private final List<Listener> listeners = new LinkedList<>();
     private final ExecutorService executorService;
+    private final DeliveryStrategy strategy;
+    private final RocksStore rocksStore;
+    private final KafkaHealthChecker kafkaHealthChecker;
 
-    public RocksProducer(final String topic, final Serializer serializer, final Listener listener, final DeliveryStrategy strategy) {
+    public RocksProducer(final String topic,
+                         final Serializer serializer,
+                         final Listener listener,
+                         final DeliveryStrategy strategy,
+                         final RocksStore rocksStore,
+                         final KafkaHealthChecker kafkaHealthChecker,
+                         final RocksProducerMetric rocksProducerMetric) {
         this.topic = topic;
         this.serializer = serializer;
         this.listeners.add(listener);
-        this.queue = RocksQueueFactory.INSTANCE.createQueue(topic);
+        this.strategy = strategy;
+        this.rocksStore = rocksStore;
+        this.kafkaHealthChecker = kafkaHealthChecker;
 
-        registerShutdownHook(strategy);
+        rocksProducerMetric.register();
+        this.listeners.add(rocksProducerMetric);
+
+        this.queue = rocksStore.createQueue(topic);
+
+        registerShutdownHook();
 
         executorService = Executors.newSingleThreadExecutor(new RocksThreadFactory("rocks_queue_consumer"));
         executorService.submit(() -> {
+            final AtomicBoolean lock = new AtomicBoolean(false);
             while(true) {
-                if(queue.isEmpty()) {
-                    continue;
-                }
+                //guaranty kafka producer sending order
+                if(lock.get()) continue;
 
-                if(!KafkaHealthChecker.INSTANCE.isKafkaBrokersAlive()){
-                    continue;
-                }
+                //waiting for new messages
+                if(queue.isEmpty()) continue;
+
+                //stop if kafka brokers are not available
+                if(!kafkaHealthChecker.isKafkaBrokersAlive()) continue;
 
                 QueueItem consume = queue.consume();
 
-                if(consume == null)
-                    continue;
+                //in case dequeue happens faster than enqueue
+                if(consume == null) continue;
 
-                listener.beforeSend(consume.getIndex());
-                strategy.delivery(getProducerRecord(topic, serializer, consume.getValue()), queue, listeners);
-                listener.afterSend(consume.getIndex());
+                KVRecord kvRecord = null;
+                try {
+                    kvRecord = serializer.deserialize(consume.getValue());
+                } catch (Exception e) {
+                    //if consumed message fails in deserialization, just discard it
+                    //and notify client
+                    queue.removeHead();
+                    synchronized (listeners) {
+                        listeners.forEach(l -> l.onSendFail(topic, consume.toString(), e));
+                    }
+                }
+
+                if(kvRecord == null) continue;
+
+                final String message = kvRecord.toString();
+                synchronized (listeners) {
+                    listeners.forEach(l -> l.beforeSend(topic, message));
+                }
+                strategy.delivery(topic, kvRecord, queue, listeners, lock);
+                synchronized (listeners) {
+                    listeners.forEach(l -> l.afterSend(topic, message));
+                }
             }
         });
 
-    }
-
-    private ProducerRecord<String, Record> getProducerRecord(String topic, Serializer serializer, byte[] value) {
-        KVRecord kvRecord = serializer.deserialize(value);
-
-        return new ProducerRecord<>(topic, kvRecord.getKey(),
-                GenericRecordMapper.mapObjectToRecord(kvRecord.getModel()));
     }
 
     public void send(String key, AvroModel value) throws RocksProducerException {
@@ -90,7 +121,6 @@ public class RocksProducer {
     public static RocksProducer createReliable(final String topic) {
         return RocksProducer.builder()
                 .topic(topic)
-                .serializer(new KryoSerializer())
                 .kafkaDeliveryStrategy(DeliveryStrategyEnum.RELIABLE)
                 .build();
     }
@@ -98,7 +128,6 @@ public class RocksProducer {
     public static RocksProducer createFast(final String topic) {
         return RocksProducer.builder()
                 .topic(topic)
-                .serializer(new KryoSerializer())
                 .kafkaDeliveryStrategy(DeliveryStrategyEnum.FAST)
                 .build();
     }
@@ -108,6 +137,9 @@ public class RocksProducer {
         private Serializer serializer;
         private Listener listener;
         private DeliveryStrategy strategy;
+        private RocksStore rocksStore;
+        private KafkaHealthChecker kafkaHealthChecker;
+        private RocksProducerMetric metric;
 
         public Builder() {
 
@@ -133,6 +165,21 @@ public class RocksProducer {
             return this;
         }
 
+        public Builder rocksStore(RocksStore rocksStore) {
+            this.rocksStore = rocksStore;
+            return this;
+        }
+
+        public Builder kafkaHealthChecker(KafkaHealthChecker kafkaHealthChecker) {
+            this.kafkaHealthChecker = kafkaHealthChecker;
+            return this;
+        }
+
+        public Builder metric(RocksProducerMetric metric) {
+            this.metric = metric;
+            return this;
+        }
+
         public RocksProducer build() {
             Assert.notNull(topic, "Topic must not be null");
 
@@ -148,7 +195,19 @@ public class RocksProducer {
                 strategy = DeliveryStrategyEnum.RELIABLE;
             }
 
-            return new RocksProducer(topic, serializer, listener, strategy);
+            if(rocksStore == null) {
+                rocksStore = RocksStoreFactory.INSTANCE.getRocksStore();
+            }
+
+            if(kafkaHealthChecker == null) {
+                kafkaHealthChecker = KafkaHealthCheckerFactory.INSTANCE.getKafkaHealthChecker();
+            }
+
+            if(metric == null) {
+                metric = new RocksProducerMetric(topic);
+            }
+
+            return new RocksProducer(topic, serializer, listener, strategy, rocksStore, kafkaHealthChecker, metric);
         }
     }
 
@@ -156,21 +215,21 @@ public class RocksProducer {
         return new Builder();
     }
 
-    private void registerShutdownHook(DeliveryStrategy strategy) {
+    private void registerShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.debug("Closing application...");
 
-            //Close store will close all queue
-            RocksQueueFactory.INSTANCE.close();
+            // Shutdown kafka delivery thread
+            this.clear();
 
             // Free resources allocated by Kafka producer
             strategy.clear();
 
             // Stop kafka health checker
-            KafkaHealthChecker.INSTANCE.clear();
+            kafkaHealthChecker.clear();
 
-            // Shutdown kafka delivery thread
-            this.clear();
+            //Close store will close all queue
+            rocksStore.close();
 
             log.info("Application closed.");
         }));
@@ -188,26 +247,26 @@ public class RocksProducer {
     }
 
     public interface Listener {
-        void beforeSend(long index);
-        void afterSend(long index);
+        void beforeSend(String topic, String message);
+        void afterSend(String topic, String message);
         void onSendSuccess(String topic, long offset);
         void onSendFail(String topic, String message, Exception exception);
     }
 
     private static class DefaultListener implements Listener {
         @Override
-        public void beforeSend(long index) {
-            log.debug("Starting send the #{} of message to kafka", index);
-        }
-
-        @Override
-        public void afterSend(long index) {
-            log.debug("Sending the #{} of message to kafka finished", index);
-        }
-
-        @Override
         public void onSendFail(String topic, String message, Exception exception) {
             log.error("Sending data {} to kafka topic {} failed", message, topic, exception);
+        }
+
+        @Override
+        public void beforeSend(String topic, String message) {
+            log.debug("Before send data {} to kafka topic {}", message, topic);
+        }
+
+        @Override
+        public void afterSend(String topic, String message) {
+            log.debug("After send data {} to kafka topic {}", message, topic );
         }
 
         @Override

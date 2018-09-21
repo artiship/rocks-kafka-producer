@@ -1,10 +1,10 @@
 package com.me.rocks.kafka.delivery.health;
 
+import com.me.rocks.kafka.config.RocksProducerConfig;
 import com.me.rocks.kafka.config.RocksThreadFactory;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListTopicsResult;
 
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -12,21 +12,17 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public enum KafkaHealthChecker {
-    INSTANCE;
-
+public class KafkaHealthChecker {
     private AtomicBoolean isHealth;
     private ScheduledExecutorService executorService;
+    private AdminClient client;
 
-    KafkaHealthChecker() {
+    public KafkaHealthChecker() {
         this.isHealth = new AtomicBoolean(false);
         executorService = Executors.newSingleThreadScheduledExecutor(new RocksThreadFactory("kafka_health_checker"));
         executorService.scheduleAtFixedRate(() -> {
-            Properties properties = new Properties();
-            properties.put("bootstrap.servers", "127.0.0.1:9092");
-            properties.put("connections.max.idle.ms", 10000);
-            properties.put("request.timeout.ms", 5000);
-            try(AdminClient client = AdminClient.create(properties)) {
+            client = getKafkaAdminClient();
+            try {
                 ListTopicsResult topics = client.listTopics();
                 if(topics == null) {
                     return;
@@ -37,12 +33,16 @@ public enum KafkaHealthChecker {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 isHealth.set(false);
+            } finally {
+                if(client != null) {
+                    client.close();
+                }
             }
         }, 100, 450, TimeUnit.MILLISECONDS);
     }
 
-    public boolean isKafkaBrokersAlive() {
-        return isHealth.get();
+    public AdminClient getKafkaAdminClient() {
+        return AdminClient.create(RocksProducerConfig.getKafkaAdminClientConfig());
     }
 
     public void clear() {
@@ -54,5 +54,9 @@ public enum KafkaHealthChecker {
         } catch (InterruptedException e) {
             executorService.shutdownNow();
         }
+    }
+
+    public boolean isKafkaBrokersAlive() {
+        return isHealth.get();
     }
 }

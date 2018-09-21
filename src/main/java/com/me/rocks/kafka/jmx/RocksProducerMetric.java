@@ -6,52 +6,54 @@ import com.me.rocks.queue.jmx.RocksMetrics;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class RocksProducerMetric extends RocksMetrics implements RocksProducerMetricMXBean, RocksProducer.Listener {
-    private AtomicLong sendSuccuessCount = new AtomicLong();
-    private AtomicLong sendFailCount = new AtomicLong();
+    private final AtomicLong sendSuccessCount = new AtomicLong();
+    private final AtomicLong sendFailCount = new AtomicLong();
+    private final String topic;
 
-    @Override
-    protected String getObjectName() {
-        return null;
+    public RocksProducerMetric(String topic) {
+        this.topic = topic;
     }
 
     @Override
-    public String getQueueName() {
-        return null;
+    protected String getObjectName() {
+        return new StringBuilder("rocks.kafka.producer:topic=")
+                .append(topic)
+                .toString();
     }
 
     @Override
     public long getSendKafkaSucessCount() {
-        return 0;
+        return sendSuccessCount.get();
     }
 
     @Override
     public long getSendKafkaFailCount() {
-        return 0;
+        return sendFailCount.get();
     }
 
     @Override
     public void reset() {
+        sendSuccessCount.set(0);
+        sendFailCount.set(0);
+    }
+
+    @Override
+    public void beforeSend(String topic, String message) {
 
     }
 
-
     @Override
-    public void beforeSend(long index) {
+    public void afterSend(String topic, String message) {
 
     }
 
     @Override
     public void onSendSuccess(String topic, long offset) {
-
+        this.sendSuccessCount.incrementAndGet();
     }
 
     @Override
     public void onSendFail(String topic, String message, Exception exception) {
-
-    }
-
-    @Override
-    public void afterSend(long index) {
-
+        this.sendFailCount.incrementAndGet();
     }
 }

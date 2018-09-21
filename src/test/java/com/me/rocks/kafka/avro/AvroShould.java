@@ -1,6 +1,5 @@
-package com.me.rocks.kafka;
+package com.me.rocks.kafka.avro;
 
-import com.me.rocks.kafka.avro.GenericRecordMapper;
 import com.me.rocks.kafka.benchmark.model.DifferentUser;
 import com.me.rocks.kafka.benchmark.model.UserType;
 import org.apache.avro.Schema;
