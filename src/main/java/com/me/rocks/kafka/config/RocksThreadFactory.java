@@ -1,4 +1,4 @@
-package com.me.rocks.kafka.delivery;
+package com.me.rocks.kafka.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

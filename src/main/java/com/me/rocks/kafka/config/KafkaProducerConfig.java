@@ -1,4 +1,4 @@
-package com.me.rocks.kafka.delivery.config;
+package com.me.rocks.kafka.config;
 
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;

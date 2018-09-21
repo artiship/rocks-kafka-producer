@@ -2,10 +2,10 @@ package com.me.rocks.kafka;
 
 import com.me.rocks.kafka.avro.AvroModel;
 import com.me.rocks.kafka.avro.GenericRecordMapper;
-import com.me.rocks.kafka.delivery.RocksThreadFactory;
+import com.me.rocks.kafka.config.RocksThreadFactory;
 import com.me.rocks.kafka.delivery.health.KafkaHealthChecker;
 import com.me.rocks.kafka.delivery.strategies.DeliveryStrategy;
-import com.me.rocks.kafka.delivery.strategies.DeliveryStrategyEnum;
+import com.me.rocks.kafka.delivery.DeliveryStrategyEnum;
 import com.me.rocks.kafka.exception.RocksProducerException;
 import com.me.rocks.kafka.queue.RocksQueueFactory;
 import com.me.rocks.kafka.queue.message.KVRecord;
@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -30,14 +32,13 @@ public class RocksProducer {
     private final String topic;
     private final Serializer serializer;
     private final RocksQueue queue;
-    private final Listener listener;
+    private final List<Listener> listeners = new LinkedList<Listener>();
     private final ExecutorService executorService;
 
     public RocksProducer(final String topic, final Serializer serializer, final Listener listener, final DeliveryStrategy strategy) {
         this.topic = topic;
         this.serializer = serializer;
-        this.listener = listener;
-
+        this.listeners.add(listener);
         this.queue = RocksQueueFactory.INSTANCE.createQueue(topic);
 
         registerShutdownHook(strategy);
@@ -58,7 +59,9 @@ public class RocksProducer {
                 if(consume == null)
                     continue;
 
-                strategy.delivery(getProducerRecord(topic, serializer, consume.getValue()), queue, listener);
+                listener.beforeSend(consume.getIndex());
+                strategy.delivery(getProducerRecord(topic, serializer, consume.getValue()), queue, listeners);
+                listener.afterSend(consume.getIndex());
             }
         });
 
@@ -100,7 +103,6 @@ public class RocksProducer {
                 .build();
     }
 
-
     public static class Builder {
         private String topic;
         private Serializer serializer;
@@ -133,32 +135,13 @@ public class RocksProducer {
 
         public RocksProducer build() {
             Assert.notNull(topic, "Topic must not be null");
+
             if(serializer == null) {
                 serializer = new KryoSerializer();
             }
 
             if(listener == null) {
-                listener = new Listener() {
-                    @Override
-                    public void beforeSend(long index) {
-                        log.debug("Starting send the #{} of message to kafka", index);
-                    }
-
-                    @Override
-                    public void afterSend(long index) {
-                        log.debug("Sending the #{} of message to kafka finished", index);
-                    }
-
-                    @Override
-                    public void onSendFail(String topic, String message, Exception exception) {
-                        log.error("Sending data {} to kafka topic {} failed", message, topic, exception);
-                    }
-
-                    @Override
-                    public void onSendSuccess(String topic, long offset) {
-                        log.debug("sending data to kafka topic {} success, offset is {}", topic, offset);
-                    }
-                };
+                listener = new DefaultListener();
             }
 
             if(strategy == null) {
@@ -209,5 +192,27 @@ public class RocksProducer {
         void afterSend(long index);
         void onSendSuccess(String topic, long offset);
         void onSendFail(String topic, String message, Exception exception);
+    }
+
+    private static class DefaultListener implements Listener {
+        @Override
+        public void beforeSend(long index) {
+            log.debug("Starting send the #{} of message to kafka", index);
+        }
+
+        @Override
+        public void afterSend(long index) {
+            log.debug("Sending the #{} of message to kafka finished", index);
+        }
+
+        @Override
+        public void onSendFail(String topic, String message, Exception exception) {
+            log.error("Sending data {} to kafka topic {} failed", message, topic, exception);
+        }
+
+        @Override
+        public void onSendSuccess(String topic, long offset) {
+            log.debug("sending data to kafka topic {} success, offset is {}", topic, offset);
+        }
     }
 }

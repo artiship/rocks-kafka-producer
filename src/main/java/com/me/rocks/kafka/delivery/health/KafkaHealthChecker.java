@@ -1,6 +1,6 @@
 package com.me.rocks.kafka.delivery.health;
 
-import com.me.rocks.kafka.delivery.RocksThreadFactory;
+import com.me.rocks.kafka.config.RocksThreadFactory;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.ListTopicsResult;
 

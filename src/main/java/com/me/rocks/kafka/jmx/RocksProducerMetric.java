@@ -1,10 +1,11 @@
 package com.me.rocks.kafka.jmx;
 
+import com.me.rocks.kafka.RocksProducer;
 import com.me.rocks.queue.jmx.RocksMetrics;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public class RocksProducerMetric extends RocksMetrics implements RocksProducerMetricMXBean {
+public class RocksProducerMetric extends RocksMetrics implements RocksProducerMetricMXBean, RocksProducer.Listener {
     private AtomicLong sendSuccuessCount = new AtomicLong();
     private AtomicLong sendFailCount = new AtomicLong();
 
@@ -33,11 +34,24 @@ public class RocksProducerMetric extends RocksMetrics implements RocksProducerMe
 
     }
 
-    public void onSendSucess() {
-        this.sendSuccuessCount.incrementAndGet();
+
+    @Override
+    public void beforeSend(long index) {
+
     }
 
-    public void onSendFail() {
-        this.sendFailCount.incrementAndGet();
+    @Override
+    public void onSendSuccess(String topic, long offset) {
+
+    }
+
+    @Override
+    public void onSendFail(String topic, String message, Exception exception) {
+
+    }
+
+    @Override
+    public void afterSend(long index) {
+
     }
 }
