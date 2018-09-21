@@ -53,7 +53,6 @@ public class RocksProducer {
                     continue;
                 }
 
-                //TODO:: encapsulate queue consume serialize
                 QueueItem consume = queue.consume();
 
                 if(consume == null)
@@ -79,6 +78,26 @@ public class RocksProducer {
         } catch (RocksQueueException e) {
             throw new RocksProducerException(e);
         }
+    }
+
+    public static RocksProducer create(final String topic) {
+        return createReliable(topic);
+    }
+
+    public static RocksProducer createReliable(final String topic) {
+        return RocksProducer.builder()
+                .topic(topic)
+                .serializer(new KryoSerializer())
+                .kafkaDeliveryStrategy(DeliveryStrategyEnum.RELIABLE)
+                .build();
+    }
+
+    public static RocksProducer createFast(final String topic) {
+        return RocksProducer.builder()
+                .topic(topic)
+                .serializer(new KryoSerializer())
+                .kafkaDeliveryStrategy(DeliveryStrategyEnum.FAST)
+                .build();
     }
 
 
@@ -121,13 +140,13 @@ public class RocksProducer {
             if(listener == null) {
                 listener = new Listener() {
                     @Override
-                    public void beforeSend() {
-
+                    public void beforeSend(long index) {
+                        log.debug("Starting send the #{} of message to kafka", index);
                     }
 
                     @Override
-                    public void afterSend() {
-
+                    public void afterSend(long index) {
+                        log.debug("Sending the #{} of message to kafka finished", index);
                     }
 
                     @Override
@@ -186,8 +205,8 @@ public class RocksProducer {
     }
 
     public interface Listener {
-        void beforeSend();
-        void afterSend();
+        void beforeSend(long index);
+        void afterSend(long index);
         void onSendSuccess(String topic, long offset);
         void onSendFail(String topic, String message, Exception exception);
     }
