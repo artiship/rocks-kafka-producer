@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DeliveryStrategyTemplate implements DeliveryStrategy {
     protected final Logger log = LoggerFactory.getLogger(this.getClass());
-    private final Producer<String, Record> producer;
+    protected final Producer<String, Record> producer;
 
     public DeliveryStrategyTemplate() {
         this.producer = KafkaProducerFactory.INSTANCE.createProducer();
@@ -37,6 +37,7 @@ public abstract class DeliveryStrategyTemplate implements DeliveryStrategy {
                          final List<RocksProducer.Listener> listeners,
                          final AtomicBoolean lock) {
         try {
+            lock.set(true);
             Record record = GenericRecordMapper.mapObjectToRecord(kvRecord.getModel());
             ProducerRecord<String, Record> producerRecord = new ProducerRecord<>(topic, kvRecord.getKey(), record);
             producer.send(producerRecord, (metadata, exception) -> {
@@ -58,6 +59,7 @@ public abstract class DeliveryStrategyTemplate implements DeliveryStrategy {
             });
             afterSend(queue, lock);
         } catch (Exception exception) {
+            lock.set(false);
             synchronized (listeners) {
                 listeners.forEach(listener ->
                         listener.onSendFail(topic, kvRecord.toString(), exception));

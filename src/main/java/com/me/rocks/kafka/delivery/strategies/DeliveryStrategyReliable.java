@@ -19,6 +19,7 @@ public class DeliveryStrategyReliable extends DeliveryStrategyTemplate {
     public void afterCallback(final RocksQueue queue, AtomicBoolean lock) {
         this.removeHead(queue);
         lock.set(false);
+        this.producer.flush();
     }
 
     @Override
