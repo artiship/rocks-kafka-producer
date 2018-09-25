@@ -21,7 +21,9 @@ public class KafkaHealthChecker {
         this.isHealth = new AtomicBoolean(false);
         executorService = Executors.newSingleThreadScheduledExecutor(new RocksThreadFactory("kafka_health_checker"));
         executorService.scheduleAtFixedRate(() -> {
-            client = getKafkaAdminClient();
+            if(client == null) {
+                client = getKafkaAdminClient();
+            }
             try {
                 ListTopicsResult topics = client.listTopics();
                 if(topics == null) {
@@ -32,11 +34,10 @@ public class KafkaHealthChecker {
                     isHealth.set(true);
                 }
             } catch (InterruptedException | ExecutionException e) {
-                isHealth.set(false);
-            } finally {
                 if(client != null) {
                     client.close();
                 }
+                isHealth.set(false);
             }
         }, 100, 450, TimeUnit.MILLISECONDS);
     }
@@ -50,6 +51,10 @@ public class KafkaHealthChecker {
         try {
             if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
                 executorService.shutdownNow();
+            }
+
+            if(client != null) {
+                client.close();
             }
         } catch (InterruptedException e) {
             executorService.shutdownNow();
