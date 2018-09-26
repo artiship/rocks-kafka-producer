@@ -20,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -187,10 +189,6 @@ public class RocksProducer {
                 serializer = new KryoSerializer();
             }
 
-            if(listener == null) {
-                listener = new DefaultListener();
-            }
-
             if(strategy == null) {
                 strategy = DeliveryStrategyEnum.RELIABLE;
             }
@@ -272,6 +270,35 @@ public class RocksProducer {
         @Override
         public void onSendSuccess(String topic, long offset) {
             log.debug("sending data to kafka topic {} success, offset is {}", topic, offset);
+        }
+    }
+
+
+    public List<Listener> getListeners() {
+        return Collections.unmodifiableList(listeners);
+    }
+
+    public void registerListener(Listener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void unregisterListener(Class<? extends Listener> listenerClass) {
+        synchronized (listeners) {
+            Iterator<Listener> iterator = listeners.iterator();
+            while (iterator.hasNext()) {
+                Listener listener = iterator.next();
+                if (listenerClass.isInstance(listener)) {
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+    public void unregisterListener(Listener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
         }
     }
 }
