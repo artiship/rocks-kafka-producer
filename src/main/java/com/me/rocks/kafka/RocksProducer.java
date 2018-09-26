@@ -50,10 +50,11 @@ public class RocksProducer {
                          final RocksProducerMetric rocksProducerMetric) {
         this.topic = topic;
         this.serializer = serializer;
-        this.listeners.add(listener);
         this.strategy = strategy;
         this.rocksStore = rocksStore;
         this.kafkaHealthChecker = kafkaHealthChecker;
+
+        if(listener != null) this.listeners.add(listener);
 
         rocksProducerMetric.register();
         this.listeners.add(rocksProducerMetric);
