@@ -31,7 +31,7 @@ public class SerializerShould extends AbstractShould {
 
         assertEquals(kvRecord, kv);
         assertEquals(kvRecord.getKey(), kv.getKey());
-        DifferentUser differentUser = (DifferentUser) kvRecord.getModel();
+        DifferentUser differentUser = (DifferentUser) kvRecord.getValue();
         assertEquals(differentUser, user);
     }
 }

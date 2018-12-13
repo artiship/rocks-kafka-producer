@@ -1,15 +1,15 @@
 package com.me.rocks.kafka.delivery;
 
+import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import org.junit.Before;
 import org.junit.Test;
-import ch.qos.logback.classic.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class EnumFactoryShould {
     private static final Logger log = (Logger) LoggerFactory.getLogger(EnumFactoryShould.class);

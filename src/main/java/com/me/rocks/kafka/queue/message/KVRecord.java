@@ -6,38 +6,38 @@ import java.io.Serializable;
 import java.util.Objects;
 
 public class KVRecord implements Serializable {
-    private String key;
-    private AvroModel model;
+    private AvroModel key;
+    private AvroModel value;
 
     public KVRecord() {
     }
 
-    public KVRecord(String key, AvroModel model) {
+    public KVRecord(AvroModel key, AvroModel value) {
         this.key = key;
-        this.model = model;
+        this.value = value;
     }
 
-    public String getKey() {
+    public AvroModel getKey() {
         return key;
     }
 
-    public void setKey(String key) {
+    public void setKey(AvroModel key) {
         this.key = key;
     }
 
-    public AvroModel getModel() {
-        return model;
+    public AvroModel getValue() {
+        return value;
     }
 
-    public void setModel(AvroModel model) {
-        this.model = model;
+    public void setValue(AvroModel value) {
+        this.value = value;
     }
 
     @Override
     public String toString() {
         return "KVRecord{" +
-                "key='" + key + '\'' +
-                ", model=" + model +
+                "key=" + key +
+                ", value=" + value +
                 '}';
     }
 
@@ -47,11 +47,11 @@ public class KVRecord implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         KVRecord kvRecord = (KVRecord) o;
         return Objects.equals(key, kvRecord.key) &&
-                Objects.equals(model, kvRecord.model);
+                Objects.equals(value, kvRecord.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(key, model);
+        return Objects.hash(key, value);
     }
 }

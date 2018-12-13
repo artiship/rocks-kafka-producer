@@ -25,6 +25,6 @@ public class RocksThreadFactory implements ThreadFactory {
     }
 
     private String getThreadName() {
-        return "rocks-kafka-producer-" + name + "-" + threadId;
+        return "krp-" + name + "-" + threadId;
     }
 }

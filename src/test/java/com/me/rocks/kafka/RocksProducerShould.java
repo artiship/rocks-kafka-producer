@@ -1,7 +1,9 @@
 package com.me.rocks.kafka;
 
 import com.me.rocks.kafka.avro.GenericRecordMapper;
+import com.me.rocks.kafka.benchmark.model.DifferentUser;
 import com.me.rocks.kafka.exception.RocksProducerException;
+import com.me.rocks.kafka.queue.message.AvroKey;
 import com.me.rocks.kafka.queue.message.KVRecord;
 import com.me.rocks.kafka.queue.serialize.KryoSerializer;
 import com.me.rocks.queue.QueueItem;
@@ -21,31 +23,40 @@ public class RocksProducerShould extends AbstractShould{
 
     @Test public void
     should_mock_producer_work() {
-        mockProducer.send(recordSent(), (recordMetadata, e) -> log.info("rocks producer is good", e));
+        mockProducer.send(recordSent(user), (recordMetadata, e) -> log.info("rocks producer is good", e));
 
-        assertEquals(mockProducer.history(), Arrays.asList(recordSent()));
+        assertEquals(mockProducer.history(), Arrays.asList(recordSent(user)));
     }
 
     @Test public void
     should_inject_mock_producer_into_rocks_producer() throws RocksProducerException {
-        rocksProducer.send(user.getName(), user);
-        rocksProducer.send(user.getName(), user);
-        rocksProducer.send(user.getName(), user);
+        DifferentUser user1 = DifferentUser.mock();
+        DifferentUser user2 = DifferentUser.mock();
+        DifferentUser user3 = DifferentUser.mock();
+
+        user1.setName("user1");
+        user2.setName("user2");
+        user3.setName("user3");
+
+        rocksProducer.send(user1.getName(), user1);
+        rocksProducer.send(user2.getName(), user2);
+        rocksProducer.send(user3.getName(), user3);
 
         RocksQueue queue = store.createQueue(topic);
         QueueItem consume = queue.consume();
         KryoSerializer kryoSerializer = new KryoSerializer();
         KVRecord kvRecord = kryoSerializer.deserialize(consume.getValue());
 
-        assertEquals(user, kvRecord.getModel());
+        assertEquals(user1, kvRecord.getValue());
 
         //wait for queue consumer thread send data into kafka
         waitForAwhile();
-        assertEquals(mockProducer.history(), Arrays.asList(recordSent(),recordSent(),recordSent()));
+        assertEquals(mockProducer.history(), Arrays.asList(recordSent(user1),recordSent(user2),recordSent(user3)));
     }
 
-    private ProducerRecord<String, Record> recordSent() {
-        Record record = GenericRecordMapper.mapObjectToRecord(user);
-        return new ProducerRecord<>(topic, user.getName(), record);
+    private ProducerRecord<Record, Record> recordSent(DifferentUser user) {
+        Record key = GenericRecordMapper.mapObjectToRecord(new AvroKey(user.getName()));
+        Record value = GenericRecordMapper.mapObjectToRecord(user);
+        return new ProducerRecord<>(topic, key, value);
     }
 }

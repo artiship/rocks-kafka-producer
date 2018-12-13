@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public final class DifferentUser extends AvroModel {
+public final class DifferentUser implements AvroModel {
     @Nullable
     @AvroMeta(key = "key", value = "value")
     private String name;

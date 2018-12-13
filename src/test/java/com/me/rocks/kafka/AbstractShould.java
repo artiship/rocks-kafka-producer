@@ -4,6 +4,7 @@ import com.me.rocks.kafka.benchmark.model.DifferentUser;
 import com.me.rocks.kafka.delivery.health.KafkaHealthChecker;
 import com.me.rocks.kafka.delivery.strategies.DeliveryStrategy;
 import com.me.rocks.kafka.delivery.strategies.DeliveryStrategyFast;
+import com.me.rocks.kafka.queue.message.AvroKey;
 import com.me.rocks.kafka.queue.message.KVRecord;
 import com.me.rocks.queue.RocksStore;
 import com.me.rocks.queue.StoreOptions;
@@ -12,14 +13,13 @@ import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
-import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericData.Record;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.MockKafkaAdminClientEnv;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.common.Cluster;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.serialization.Serializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.After;
 import org.junit.Before;
 
@@ -27,26 +27,25 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-
 abstract public class AbstractShould {
 
     protected DifferentUser user;
     protected KVRecord kv;
     protected static final String topic = "topic_name";
     protected static final String rocks_db = "rocks_db";
-    protected MockProducer<String, GenericData.Record> mockProducer;
+    protected MockProducer<Record, Record> mockProducer;
     protected DeliveryStrategy deliveryStrategy;
     protected RocksProducer rocksProducer;
     protected RocksStore store;
-    protected RocksProducerShould.MockKafkaHealthChecker kafkaHealthChecker;
+    protected KafkaHealthChecker kafkaHealthChecker;
 
     @Before public void
     setUp() {
         user = DifferentUser.mock();
-        kv = new KVRecord(user.getName(), user);
+        kv = new KVRecord(new AvroKey(user.getName()), user);
 
-        mockProducer = new MockProducer<String, GenericData.Record>(true, new StringSerializer(), mockAvroSerializer());
+        Serializer mockAvroSerializer = mockAvroSerializer();
+        mockProducer = new MockProducer<Record, Record>(true, mockAvroSerializer, mockAvroSerializer);
         deliveryStrategy = new DeliveryStrategyFast(mockProducer);
         store = new RocksStore(StoreOptions.builder().database(rocks_db).build());
         kafkaHealthChecker = new MockKafkaHealthChecker();
@@ -92,13 +91,15 @@ abstract public class AbstractShould {
         public MockKafkaHealthChecker() {
         }
 
-        /*@Override
-        public AdminClient getKafkaAdminClient() {
-            return mockAdminClient();
-        }*/
+        public boolean isKafkaTopicAvailable(final String topic) {
+            return true;
+        }
 
-        @Override
-        public boolean isKafkaBrokersAlive() {
+        public boolean isKafkaBrokersAvailable() {
+            return true;
+        }
+
+        public boolean isSchemaRegistryAvailable() {
             return true;
         }
     }
@@ -107,6 +108,7 @@ abstract public class AbstractShould {
     public void
     destroy() {
         this.store.close(); //release rocks db lock for directory deleting
+        this.rocksProducer.getRocksProducerMetric().unregister();
         Files.deleteDirectory(rocks_db);
     }
 }

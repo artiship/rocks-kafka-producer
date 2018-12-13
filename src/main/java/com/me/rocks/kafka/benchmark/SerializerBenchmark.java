@@ -1,6 +1,7 @@
 package com.me.rocks.kafka.benchmark;
 
 import com.me.rocks.kafka.benchmark.model.DifferentUser;
+import com.me.rocks.kafka.queue.message.AvroKey;
 import com.me.rocks.kafka.queue.message.KVRecord;
 import com.me.rocks.kafka.queue.serialize.JdkSerializer;
 import com.me.rocks.kafka.queue.serialize.KryoSerializer;
@@ -41,8 +42,8 @@ public class SerializerBenchmark {
 
         kvRecord = new KVRecord();
         DifferentUser user = DifferentUser.mock();
-        kvRecord.setKey(String.valueOf(user.getName()));
-        kvRecord.setModel(user);
+        kvRecord.setKey(new AvroKey(String.valueOf(user.getName())));
+        kvRecord.setValue(user);
 
         jdkSerialized = jdkSerializer.serialize(kvRecord);
         kryoSerialized = kryoSerializer.serialize(kvRecord);

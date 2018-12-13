@@ -1,7 +1,6 @@
 package com.me.rocks.kafka.avro;
 
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.reflect.ReflectData;
 import org.springframework.beans.PropertyAccessorFactory;

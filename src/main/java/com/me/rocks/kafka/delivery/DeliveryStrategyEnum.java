@@ -1,6 +1,6 @@
 package com.me.rocks.kafka.delivery;
 
-import com.me.rocks.kafka.RocksProducer.Listener;
+import com.me.rocks.kafka.RocksProducer;
 import com.me.rocks.kafka.delivery.strategies.DeliveryStrategy;
 import com.me.rocks.kafka.delivery.strategies.DeliveryStrategyFast;
 import com.me.rocks.kafka.delivery.strategies.DeliveryStrategyReliable;
@@ -23,7 +23,7 @@ public enum DeliveryStrategyEnum implements DeliveryStrategy {
         public void delivery(String topic,
                              KVRecord kvRecord,
                              RocksQueue queue,
-                             List<Listener> listeners,
+                             List<RocksProducer.Listener> listeners,
                              AtomicBoolean lock) {
             this.strategy.delivery(topic, kvRecord, queue, listeners, lock);
         }
@@ -45,7 +45,7 @@ public enum DeliveryStrategyEnum implements DeliveryStrategy {
         public void delivery(String topic,
                              KVRecord kvRecord,
                              RocksQueue queue,
-                             List<Listener> listeners,
+                             List<RocksProducer.Listener> listeners,
                              AtomicBoolean lock) {
             this.strategy.delivery(topic, kvRecord, queue, listeners, lock);
         }

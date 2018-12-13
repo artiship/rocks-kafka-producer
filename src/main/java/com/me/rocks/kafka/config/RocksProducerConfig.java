@@ -10,8 +10,8 @@ public class RocksProducerConfig {
     public static Properties getKafkaAdminClientConfig() {
         Properties properties = new Properties();
         properties.put(BOOTSTRAP_SERVERS_CONFIG, ConfigManager.getConfig(BOOTSTRAP_SERVERS_CONFIG));
-        properties.put("connections.max.idle.ms", 10000);
-        properties.put("request.timeout.ms", 5000);
+        properties.put(CONNECTIONS_MAX_IDLE_MS_CONFIG, 10000);
+        properties.put(REQUEST_TIMEOUT_MS_CONFIG, 10000);
         return properties;
     }
 
@@ -34,5 +34,9 @@ public class RocksProducerConfig {
         properties.setProperty(VALUE_SERIALIZER_CLASS_CONFIG, ConfigManager.getConfig(VALUE_SERIALIZER_CLASS_CONFIG));
         properties.setProperty(SCHEMA_REGISTRY_URL_CONFIG, ConfigManager.getConfig(SCHEMA_REGISTRY_URL_CONFIG));
         return properties;
+    }
+
+    public static String getSchemaRegistryUrl() {
+        return ConfigManager.getConfig(SCHEMA_REGISTRY_URL_CONFIG);
     }
 }

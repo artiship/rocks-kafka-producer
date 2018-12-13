@@ -23,8 +23,8 @@ public class RocksProducerMetricShould extends AbstractShould {
         mBeanServer = ManagementFactory.getPlatformMBeanServer();
         objectName = new ObjectName("rocks.kafka.producer:topic=" + topic);
 
-        assertEquals(mBeanServer.getAttribute(objectName, "SendKafkaSucessCount"), 0L);
-        assertEquals(mBeanServer.getAttribute(objectName, "SendKafkaFailCount"), 0L);
+        assertEquals(mBeanServer.getAttribute(objectName, "KafkaDeliverySuccessCount"), 0L);
+        assertEquals(mBeanServer.getAttribute(objectName, "KafkaDeliveryFailCount"), 0L);
     }
 
 }

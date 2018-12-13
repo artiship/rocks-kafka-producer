@@ -3,7 +3,10 @@ package com.me.rocks.kafka.queue.serialize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class JdkSerializer implements Serializer {
     private static final Logger log = LoggerFactory.getLogger(JdkSerializer.class);

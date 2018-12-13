@@ -20,7 +20,7 @@ public class AvroModelShould {
         user.setName("samuel");
         user.setUserType(JUNIOR.toString());
 
-        String schema = user.getSchema();
+        String schema = AvroUtils.getSchema(user);
 
         assertNotNull(schema);
     }
