@@ -29,11 +29,11 @@ For different requirements, this project provides two kinds of sending mode: `fa
 
 This project uses avro schema by default for data quality and handling schema evolution. It uses Avro's reflect API to automatically convert POJO to avro json, let the users don't need to concern about the sophisticated avro dsl syntax.
 
-```json
+```java
 @Data
 public class SimpleModel implements AvroModel {
-    private int id;
-    private String name;
+  private int id;
+  private String name;
 }
 ```
 
@@ -156,7 +156,7 @@ rocksProducer.registerListener(listener);
 This project also provides a bunch of jmx metrics for monitoring:
 
 Metric| Type| Desc
----|---:|---
+---|---|---
 Topic| String | topic 
 KafkaDeliveryMode| String | delivery mode: fast, reliable
 KafkaBrokersAvailable| boolean | kafka brokers are available or not 
@@ -181,7 +181,7 @@ KafkaDeliveryTime95thPercentile| double |
 
 `Kafka producer` configs 
 
-Name	| value for example
+Name	| Value for example
 -----|-----|
 bootstrap.servers|	localhost:9092 |
 acks	|all	
@@ -197,7 +197,7 @@ schema.registry.url|http://localhost:8081
 
 `RocksDB` configs
 
-name	| value for example
+Name	| Value for example
 -----|-----
 rocksdb.location.directory|/data/rocks_db/
 rocksdb.database.name|rocks_db
