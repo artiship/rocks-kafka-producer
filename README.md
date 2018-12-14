@@ -6,15 +6,15 @@ A rocks solid kafka producer with persistent queue
 
 Kafka clients facing two scenarios should concern about:
 
-1. When kafka cluster or brokers are not available, clients are continuing sending data to. This will results in client has too much data resides in memory which can not be delivered to kafka. This will exhaust client's memory and even cause it crash. Then if restart the application, data in memory will lose.
-2. When client application suddenly crash, data reside in kafka client's memory accumulator will lose.
+1. When kafka cluster or brokers are not available, clients are continuing sending data to. This will result in the client has too much data resides in memory which can not be delivered to kafka. This will exhaust the client's memory and even cause it to crash. Then if restart the application, data in memory will lose.
+2. When client application suddenly crashes, data reside in kafka client's memory accumulator will lose.
 
-These two scenarios could be addressed by the persistent queue. This project uses the another's another project `rocks-queue-java` provides embedded local persistent queue for sending data. 
+These two scenarios could be addressed by the persistent queue. This project uses the another's another project `rocks-queue-java` provides an embedded local persistent queue for sending data. 
 
-Data will first sync write into rocks queue as well as a write-ahead-log. Meanwhile there is a thread forever asynchronously consuming the queue and then delivery messages to kafka. 
+Data will first sync write into rocks queue as well as a write-ahead-log. Meanwhile, there is a thread forever asynchronously consuming the queue and then deliver messages to Kafka. 
 
-1. If kafka brokers are not available, data sent by clients will stored in RocksDB at local file system. Once the kafka cluster has been recovered. Data at last will be consumed and written into kafka.
-2. In the case client crash. Since data are first written into write-ahead-log. Data will be recovered after client restart.
+1. If Kafka brokers are not available, data sent by clients will be stored in RocksDB at the local file system. Once the Kafka cluster has been recovered. Data, at last, will be consumed and written into Kafka.
+2. In the case client crash. Since data are first written into write-ahead-log. Data will be recovered after a client restart.
 
 Please notice this producer is dedicated for Confluent Kafka Platform with schema registry and support Avro Schema.
 
@@ -22,12 +22,12 @@ Please notice this producer is dedicated for Confluent Kafka Platform with schem
 
 For different requirements, this project provides two kinds of sending mode: `fast` and `reliable`
 
-1. `reliable` mode will not consume the next item from queue until the kafka send callback successfully return.
-2. `fast` will not wait for callback return and continue to process the next message, this the trade off can made by client between efficiency and data lose
+1. `reliable` mode will not consume the next item from the queue until the kafka send callback successfully return.
+2. `fast` will not wait for callback return and continue to process the next message, this the trade-off can be made by client between efficiency and data loss
 
 ## Avro Schema
 
-This project uses avro schema by default for data quality and handling schema evolution. It uses Avro's reflect API to automatically convert POJO to avro json, let the users don't need to concern about the sophisticated avro dsl syntax.
+This project uses Avro schema by default for data quality and handling schema evolution. It uses Avro's reflect API to automatically convert POJO to Avro JSON, let the users don't need to concern about the sophisticated Avro DSL syntax.
 
 ```java
 @Data
@@ -37,7 +37,7 @@ public class SimpleModel implements AvroModel {
 }
 ```
 
-If use AvroUtils.getSchema(simpleModel) will generate schema bellow. This schema will automatically register into kafka schema registry when sending data to kafka.
+If use AvroUtils.getSchema(simpleModel) will generate schema below. This schema will automatically register into kafka schema registry when sending data to kafka.
 
 ```json
 {
@@ -79,7 +79,7 @@ Add maven dependency to pom.xml
 
 #### Creating Rocks Producer 
 
-One topic should only have one `RocksProducer`, multiple producers will let the queue consuming disordered. In case you uses factory, you can create producer as single instance like bellow:
+One topic should only have one `RocksProducer`. Multiple producers will let the queue consuming disordered. If you are in a spring project that you can instantiate producer as a singleton as below
 
 ```java
 @Configuration
