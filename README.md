@@ -6,12 +6,12 @@ A rocks solid kafka producer with persistent queue
 
 Kafka clients facing two scenarios should concern about:
 
-1. When kafka cluster or brokers are not available, clients are continuing sending data to. This will result in the client has too much data resides in memory which can not be delivered to kafka. This will exhaust the client's memory and even cause it to crash. Then if restart the application, data in memory will lose.
-2. When client application suddenly crashes, data reside in kafka client's memory accumulator will lose.
+1. When kafka cluster or brokers are not available. Clients are continuing sending data will cuase the clients' memory exhausted and even to crash. Then restart the application will result in data loss.
+2. When client crashes, data reside in kafka client's memory accumulator will lose.
 
-These two scenarios could be addressed by the persistent queue. This project uses the author's another project `rocks-queue-java` provides an embedded local persistent queue for sending data. 
+These two scenarios could be addressed by the persistent queue, my another project `rocks-queue-java`.
 
-Data will first sync write into rocks queue as well as a write-ahead-log. Meanwhile, there is a thread forever asynchronously consuming the queue and then deliver messages to Kafka. 
+Use the rocks queue, data will first sync write into the queue. then there is a thread forever asynchronously consuming the queue and delivering the consumed messages to kafka.
 
 1. If Kafka brokers are not available, data sent by clients will be stored in RocksDB at the local file system. Once the Kafka cluster has been recovered. Data, at last, will be consumed and written into Kafka.
 2. In the case client crash. Since data are first written into write-ahead-log. Data will be recovered after a client restart.
