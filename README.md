@@ -9,7 +9,7 @@ Kafka clients facing two scenarios should concern about:
 1. When kafka cluster or brokers are not available, clients are continuing sending data to. This will result in the client has too much data resides in memory which can not be delivered to kafka. This will exhaust the client's memory and even cause it to crash. Then if restart the application, data in memory will lose.
 2. When client application suddenly crashes, data reside in kafka client's memory accumulator will lose.
 
-These two scenarios could be addressed by the persistent queue. This project uses the another's another project `rocks-queue-java` provides an embedded local persistent queue for sending data. 
+These two scenarios could be addressed by the persistent queue. This project uses the author's another project `rocks-queue-java` provides an embedded local persistent queue for sending data. 
 
 Data will first sync write into rocks queue as well as a write-ahead-log. Meanwhile, there is a thread forever asynchronously consuming the queue and then deliver messages to Kafka. 
 
