@@ -94,7 +94,7 @@ public class RocksProducersConfig {
  
     @Bean
     public RocksProducer fastProducer() {
-        return RocksProducer.createReliable(TOPIC_FAST);
+        return RocksProducer.createFast(TOPIC_FAST);
     }
 }
 ```
